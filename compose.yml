@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:18.2-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${PG_SUPERUSER_PASS}
@@ -59,7 +59,7 @@ services:
     networks:
       - infra
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
