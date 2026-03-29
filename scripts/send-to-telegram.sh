@@ -6,7 +6,7 @@
 
 [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] && exit 0
 
-BACKUP_FILE=$(ls -1t /backup/*/*zst 2>/dev/null | head -1)
+BACKUP_FILE=$(find /backup -name '*.zst' -type f -exec ls -1t {} + 2>/dev/null | head -1)
 
 if [ -z "$BACKUP_FILE" ] || [ ! -f "$BACKUP_FILE" ]; then
     echo "[telegram] no .zst file found in /backup" >&2
