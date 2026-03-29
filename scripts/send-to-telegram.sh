@@ -1,14 +1,15 @@
 #!/bin/sh
 # Post-backup hook: sends backup file to Telegram via Bot API.
-# Mounted to /assets/scripts/post/ — auto-executed by tiredofit/db-backup after each job.
+# Auto-executed by tiredofit/db-backup after each job.
+# $1 = exit code (NOT file path), so we find the most recent backup file.
 # Always exits 0 so a Telegram failure never breaks the backup process.
-
-BACKUP_FILE="$1"
 
 [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] && exit 0
 
+BACKUP_FILE=$(ls -1t /backup/*/*zst 2>/dev/null | head -1)
+
 if [ -z "$BACKUP_FILE" ] || [ ! -f "$BACKUP_FILE" ]; then
-    echo "[telegram] file not found: '$BACKUP_FILE'" >&2
+    echo "[telegram] no .zst file found in /backup" >&2
     exit 0
 fi
 
