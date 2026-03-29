@@ -112,6 +112,7 @@ services:
       DEFAULT_COMPRESSION_LEVEL: 3
       DEFAULT_CHECKSUM: MD5
       DEFAULT_LOG_LEVEL: notice
+      CONTAINER_ENABLE_MONITORING: "FALSE"
 
       # --- Telegram (отправка файлов бэкапов) ---
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
