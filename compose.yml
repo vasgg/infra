@@ -97,6 +97,128 @@ services:
     networks:
       - infra
 
+  db-backup:
+    image: tiredofit/db-backup
+    restart: unless-stopped
+    volumes:
+      - ./backups:/backup
+      - ./scripts/send-to-telegram.sh:/assets/scripts/post/send-to-telegram.sh:ro
+      - ./scripts/notify-error.sh:/assets/scripts/notify-error.sh:ro
+      - /home/vasg/projects/new_praxis_bot:/mnt/sqlite/new_praxis_bot:ro
+      - /home/vasg/projects/logbook_robot/data:/mnt/sqlite/logbook_robot:ro
+    environment:
+      TIMEZONE: Asia/Tbilisi
+      DEFAULT_COMPRESSION: ZSTD
+      DEFAULT_COMPRESSION_LEVEL: 3
+      DEFAULT_CHECKSUM: MD5
+      DEFAULT_LOG_LEVEL: notice
+
+      # --- Telegram (отправка файлов бэкапов) ---
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+
+      # --- Уведомления об ошибках бэкапа ---
+      ENABLE_NOTIFICATIONS: "TRUE"
+      NOTIFICATION_TYPE: CUSTOM
+      NOTIFICATION_CUSTOM_SCRIPT: /assets/scripts/notify-error.sh
+
+      # --- Postgres 1 ---
+      DB01_TYPE: pgsql
+      DB01_HOST: postgres
+      DB01_PORT: 5432
+      DB01_USER: ${PG_DB01_USER}
+      DB01_PASS: ${PG_DB01_PASS}
+      DB01_NAME: ${PG_DB01_NAME}
+      DB01_BACKUP_BEGIN: "0400"
+      DB01_BACKUP_INTERVAL: 1440
+      DB01_CLEANUP_TIME: 20160       # 14 дней
+
+      # --- Postgres 2 ---
+      DB02_TYPE: pgsql
+      DB02_HOST: postgres
+      DB02_PORT: 5432
+      DB02_USER: ${PG_DB02_USER}
+      DB02_PASS: ${PG_DB02_PASS}
+      DB02_NAME: ${PG_DB02_NAME}
+      DB02_BACKUP_BEGIN: "0402"
+      DB02_BACKUP_INTERVAL: 1440
+      DB02_CLEANUP_TIME: 20160
+
+      # --- Postgres 3 ---
+      DB03_TYPE: pgsql
+      DB03_HOST: postgres
+      DB03_PORT: 5432
+      DB03_USER: ${PG_DB03_USER}
+      DB03_PASS: ${PG_DB03_PASS}
+      DB03_NAME: ${PG_DB03_NAME}
+      DB03_BACKUP_BEGIN: "0404"
+      DB03_BACKUP_INTERVAL: 1440
+      DB03_CLEANUP_TIME: 20160
+
+      # --- Redis (db 0–3, общий пароль) ---
+      DB04_TYPE: redis
+      DB04_HOST: redis
+      DB04_PORT: 6379
+      DB04_PASS: ${REDIS_PASSWORD}
+      DB04_NAME: ${REDIS_DB04_NUM:-0}
+      DB04_BACKUP_BEGIN: "0410"
+      DB04_BACKUP_INTERVAL: 1440
+      DB04_CLEANUP_TIME: 20160
+
+      DB05_TYPE: redis
+      DB05_HOST: redis
+      DB05_PORT: 6379
+      DB05_PASS: ${REDIS_PASSWORD}
+      DB05_NAME: ${REDIS_DB05_NUM:-1}
+      DB05_BACKUP_BEGIN: "0412"
+      DB05_BACKUP_INTERVAL: 1440
+      DB05_CLEANUP_TIME: 20160
+
+      DB06_TYPE: redis
+      DB06_HOST: redis
+      DB06_PORT: 6379
+      DB06_PASS: ${REDIS_PASSWORD}
+      DB06_NAME: ${REDIS_DB06_NUM:-2}
+      DB06_BACKUP_BEGIN: "0414"
+      DB06_BACKUP_INTERVAL: 1440
+      DB06_CLEANUP_TIME: 20160
+
+      DB07_TYPE: redis
+      DB07_HOST: redis
+      DB07_PORT: 6379
+      DB07_PASS: ${REDIS_PASSWORD}
+      DB07_NAME: ${REDIS_DB07_NUM:-3}
+      DB07_BACKUP_BEGIN: "0416"
+      DB07_BACKUP_INTERVAL: 1440
+      DB07_CLEANUP_TIME: 20160
+
+      # --- SQLite: new_praxis_bot ---
+      DB08_TYPE: sqlite3
+      DB08_NAME: /mnt/sqlite/new_praxis_bot/prod_new_praxis_bot.db
+      DB08_BACKUP_BEGIN: "0420"
+      DB08_BACKUP_INTERVAL: 1440
+      DB08_CLEANUP_TIME: 20160
+
+      # --- SQLite: logbook_robot ---
+      DB09_TYPE: sqlite3
+      DB09_NAME: /mnt/sqlite/logbook_robot/logbook.db
+      DB09_BACKUP_BEGIN: "0422"
+      DB09_BACKUP_INTERVAL: 1440
+      DB09_CLEANUP_TIME: 20160
+    mem_limit: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - infra
+
 networks:
   infra:
     name: infra
